@@ -127,4 +127,33 @@ accuracy(fit_mco) |>
 fit_mco |> gg_tsresiduals()
 ```
 
+```{r}
+# Validacion train (80%) - test pronostico (20%)
+
+index_cut <- floor(nrow(desempleo) * 0.8)
+index_train <- seq(1, index_cut)
+index_test <- seq(index_cut + 1, nrow(desempleo))
+
+# set train
+desempleo_train <- desempleo[index_train, ]
+desempleo_test <- desempleo[index_test, ]
+
+# Entrenar el modelo
+
+fit_mco_train <- desempleo_train |>
+  model(
+    mco_stl = TSLM(tasa_desempleo ~ trend() + season()),
+    mco_stl_covid = TSLM(tasa_desempleo ~ trend() + season() + I(periodo == yearmonth("2020-03-01"))),
+    mco_trend = TSLM(tasa_desempleo ~ trend())
+  )
+
+# Prediccion de los modelos
+h_pronostico <- length(index_test)
+predict_mco_model <- forecast(fit_mco_train, h = h_pronostico)
+
+# Comparar rendimiento en el set test
+accuracy(predict_mco_model, desempleo_test) |>
+  select(.model, MAE, RMSE, MAPE, MASE)
+```
+
 
