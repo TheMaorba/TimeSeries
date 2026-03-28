@@ -7,6 +7,10 @@ editor: visual
 
 ## Instalacion de librerias
 
+La informacion de esto puede ser encontrada en el siguiente link
+
+https://github.com/fersalme/series-tiempo-econometria/blob/main/01-modelo-STL1.R
+
 ```{r, eval=FALSE}
 install.packages(c("tidyverse", "tsibble", "feasts", "fable"))
 ```
@@ -24,28 +28,30 @@ library(fable)
 library(readr)
 desempleo <- read_delim("data/Mercado laboral y población.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
+colnames(desempleo) <- c("periodo", "tasa_desempleo", "tasa_ocupacion")
+head(desempleo)
 
 ```
 
 ```{r}
 # temporalidad
 desempleo <- desempleo |>
-    mutate(`Periodo(MMM, AAAA)` = yearmonth(`Periodo(MMM, AAAA)`)) |>
-    as_tsibble(index = `Periodo(MMM, AAAA)`)
+    mutate(periodo = yearmonth(periodo)) |>
+    as_tsibble(index = periodo)
 ```
 
 ```{r}
 # Numero de registros
 cat("Numero de observaciones serie desempleo : ", nrow(desempleo))
-cat("\nTemporalidad de la serie : ", range(year(desempleo$`Periodo(MMM, AAAA)`)))
-cat("\nTemporalidad fechas de la serie :", range(desempleo$`Periodo(MMM, AAAA)`))
+cat("\nTemporalidad de la serie : ", range(year(desempleo$periodo)))
+cat("\nTemporalidad fechas de la serie :", range(desempleo$periodo))
 ```
 ```{r}
 # Ajustar la temporalidad de los datos
 desempleo <- desempleo |>
-  mutate(`Periodo(MMM, AAAA)` = yearmonth(`Periodo(MMM, AAAA)`)) |>
-  as_tsibble(index = `Periodo(MMM, AAAA)`) |>
-  select(-`Tasa de ocupación - total nacional`)
+  mutate(periodo = yearmonth(periodo)) |>
+  as_tsibble(index = periodo) |>
+  select(- tasa_ocupacion)
 
 head(desempleo)
 ```
@@ -62,7 +68,7 @@ autoplot(desempleo)
 
 desempleo |>
   model(
-    STL(`Tasa de desempleo - total nacional` ~ trend() + season(window ="periodic")) 
+    STL(tasa_desempleo ~ trend() + season(window ="periodic")) 
     )|>
   components()|>
     autoplot()
@@ -72,7 +78,7 @@ desempleo |>
 # Ajustar el modelo usando TSLM (Time Series Linear Model - MCO para series de tiempo)
 fit_mco <- desempleo |>
   model(
-    mco_lineal = TSLM(`Tasa de desempleo - total nacional` ~ trend() + season())
+    mco_lineal = TSLM(tasa_desempleo ~ trend() + season())
   )
 
 # Generar el pronóstico para los próximos 12 meses
@@ -90,13 +96,35 @@ pronostico_mco |>
        y = "Tasa de desempleo (%)") +
   theme_minimal()
 ```
-
-
 ```{r}
 # 3. Reporte del modelo
 report(fit_mco)
+```
+```{r}
+# Modelo solo tendencia
+fit_mco <- desempleo |>
+  model(
+    mco_stl = TSLM(tasa_desempleo ~ trend() + season()),
+    mco_stl_covid = TSLM(tasa_desempleo ~ trend() + season() + I(periodo == yearmonth("2020-03-01"))),
+    mco_trend = TSLM(tasa_desempleo ~ trend())
+  )
 
+# Comparar modelos con criterios
+
+glance(fit_mco) |>
+  select(adj_r_squared, AIC, BIC)
+
+```
+
+```{r}
+accuracy(fit_mco) |>
+  select(.model, MAE, RMSE, MAPE, MASE)
+```
+
+
+```{r}
 # 4. Residuos del modelo MCO
 fit_mco |> gg_tsresiduals()
 ```
+
 
