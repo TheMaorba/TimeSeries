@@ -5,9 +5,9 @@ format: html
 editor: visual
 ---
 
-## 
+## Instalacion de librerias
 
-```{r}
+```{r, eval=FALSE}
 install.packages(c("tidyverse", "tsibble", "feasts", "fable"))
 ```
 
@@ -17,6 +17,8 @@ library(tsibble)
 library(feasts)
 library(fable)
 ```
+
+# Importacion de la base de datos
 
 ```{r}
 library(readr)
@@ -46,5 +48,55 @@ desempleo <- desempleo |>
   select(-`Tasa de ocupación - total nacional`)
 
 head(desempleo)
+```
+# Grafico
+```{r}
+# Grafico de la serie
+# Tamaño de los graficos
+options(repr.plot.width = 6, repr.plot.height = 4)
+autoplot(desempleo)
+```
+
+```{r}
+# Descomposicion STL de la serie
+
+desempleo |>
+  model(
+    STL(`Tasa de desempleo - total nacional` ~ trend() + season(window ="periodic")) 
+    )|>
+  components()|>
+    autoplot()
+```
+
+```{r}
+# Ajustar el modelo usando TSLM (Time Series Linear Model - MCO para series de tiempo)
+fit_mco <- desempleo |>
+  model(
+    mco_lineal = TSLM(`Tasa de desempleo - total nacional` ~ trend() + season())
+  )
+
+# Generar el pronóstico para los próximos 12 meses
+pronostico_mco <- fit_mco |>
+  forecast(h = "12 months")
+
+```
+
+```{r}
+# Graficar el pronóstico
+pronostico_mco |>
+  autoplot(desempleo) +
+  labs(title = "Pronóstico de Desempleo en Colombia (Modelo MCO)",
+       subtitle = "Tendencia lineal + Estacionalidad fija",
+       y = "Tasa de desempleo (%)") +
+  theme_minimal()
+```
+
+
+```{r}
+# 3. Reporte del modelo
+report(fit_mco)
+
+# 4. Residuos del modelo MCO
+fit_mco |> gg_tsresiduals()
 ```
 
