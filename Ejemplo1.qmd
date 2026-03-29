@@ -46,6 +46,7 @@ cat("Numero de observaciones serie desempleo : ", nrow(desempleo))
 cat("\nTemporalidad de la serie : ", range(year(desempleo$periodo)))
 cat("\nTemporalidad fechas de la serie :", range(desempleo$periodo))
 ```
+
 ```{r}
 # Ajustar la temporalidad de los datos
 desempleo <- desempleo |>
@@ -55,7 +56,9 @@ desempleo <- desempleo |>
 
 head(desempleo)
 ```
+
 # Grafico
+
 ```{r}
 # Grafico de la serie
 # Tamaño de los graficos
@@ -97,6 +100,7 @@ pronostico |>
 # 3. Reporte del modelo
 report(fit_mco)
 ```
+
 ```{r}
 # Modelo solo tendencia
 fit_mco <- desempleo |>
@@ -116,9 +120,6 @@ glance(fit_mco) |>
 accuracy(fit_mco) |>
   select(.model, MAE, RMSE, MAPE, MASE)
 ```
-
-
-
 
 ```{r}
 # Validación train (80%) - test pronostico (20%)
@@ -146,6 +147,7 @@ predict_mco_model <- forecast(fit_mco_train, h = h_pronostico)
 accuracy(predict_mco_model, desempleo_test) |>
   select(.model, MAE, RMSE, MAPE, MASE)
 ```
+
 ```{r}
 # Graficos pronostico train - test
 predict_mco_model |>
@@ -156,11 +158,7 @@ predict_mco_model |>
   theme_minimal()
 ```
 
-
-
-
 ```{r}
 # 4. Residuos del modelo MCO
 fit_mco |> gg_tsresiduals()
 ```
-
