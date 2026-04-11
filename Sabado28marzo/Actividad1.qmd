@@ -8,6 +8,7 @@ editor: visual
 # Actividad 1: Analisis de la serie de tiempo de inflacion en Colombia
 
 ### Mateo Orozco Baldovino
+
 ### Especialidad en Estadistica Aplicada
 
 # Generalidades de la base de datos
@@ -24,14 +25,13 @@ https://github.com/TheMaorba/TimeSeries/blob/main/Sabado28marzo/Actividad1.qmd
 
 ESta base de datos es del banco de la republica. Nos muestra diferentes indicadores importantes en relacion con la inflacion.
 
-- Periodo: fecha de cada observacion
+-   Periodo: fecha de cada observacion
 
-- inflacion_sin_alimentos: es una medida de inflación que calcula cómo están cambiando los precios en la economía excluyendo los alimentos, ya que estos pueden ser muy volátiles debido a factores climáticos, estacionales o de oferta y demanda.
+-   inflacion_sin_alimentos: es una medida de inflación que calcula cómo están cambiando los precios en la economía excluyendo los alimentos, ya que estos pueden ser muy volátiles debido a factores climáticos, estacionales o de oferta y demanda.
 
-- inflacion_ni_regulados: es una medida de inflación que calcula cómo están cambiando los precios en la economía excluyendo tanto los alimentos como los servicios regulados, ya que ambos pueden ser muy volátiles debido a factores externos o intervenciones gubernamentales.
+-   inflacion_ni_regulados: es una medida de inflación que calcula cómo están cambiando los precios en la economía excluyendo tanto los alimentos como los servicios regulados, ya que ambos pueden ser muy volátiles debido a factores externos o intervenciones gubernamentales.
 
 inflacion_nucleo15: es una medida de inflación subyacente (inflación núcleo) que calcula cómo están cambiando los precios en la economía excluyendo los componentes más volátiles, usando una canasta de 15 grupos del IPC.
-
 
 Es una tasa de variación anual (%)
 
@@ -52,11 +52,12 @@ library(fable)
 # Se importa la base de datos con la informacion
 
 library(readr)
-Inflacion <- read_delim("~/Especialidad/TimeSeries/data/Inflacion.csv", 
+Inflacion <- read_delim("C:/Users/salasistemas.UTB/Desktop/TimeSeries/data/Inflacion.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
 colnames(Inflacion) <- c("periodo", "inflacion_sin_alimentos", "inflacion_ni_regulados", "inflacion_nucleo15")
 head(Inflacion)
 ```
+
 # Analisis exploratorio de la serie de tiempo
 
 ```{r}
@@ -65,12 +66,11 @@ cat("Numero de observaciones serie desempleo : ", nrow(Inflacion))
 cat("\nTemporalidad de la serie : ", range(year(Inflacion$periodo)))
 cat("\nTemporalidad fechas de la serie :", range(Inflacion$periodo))
 ```
-- El dataset tiene un numero de observaciones de 516.
-- La temporalidad de la serie va desde el año 1983 hasta el año 2026.
+
+-   El dataset tiene un numero de observaciones de 516.
+-   La temporalidad de la serie va desde el año 1983 hasta el año 2026.
 
 # Temporalidad de la serie
-
-
 
 ```{r}
 # Este codigo convierte el dataframe en un objeto tipo tsibble y define la columna "periodo" como el índice temporal de la serie, con frecuencia mensual.
@@ -90,13 +90,14 @@ En este grafico nos muestra que la serie de inflacion_nucleo15 tiene una tendenc
 options(repr.plot.width = 6, repr.plot.height = 4)
 autoplot(Inflacion)
 ```
+
 # STL = Seasonal and Trend decomposition using Loess
 
 Utilizamos el metodo de STL ( Seasonal and Trend decomposition using Loess ) para descomponer la serie en sus componentes de:
 
-- Tendencia
-- Estacionalidad 
-- Residuos
+-   Tendencia
+-   Estacionalidad
+-   Residuos
 
 Esto nos permite analizar cada componente por separado y entender mejor la estructura de la serie de tiempo.
 
@@ -104,11 +105,11 @@ Esto nos permite analizar cada componente por separado y entender mejor la estru
 
 El grafico nos muestra la descomposicion de la serie de inflacion_nucleo15 en sus componentes:
 
-- Tendencia : muestra una tendencia general descendente a lo largo del tiempo, con picos pronunciados en las décadas de 1980 y 1990, seguidos de una caída significativa en los años posteriores (algo que insinuaba el grafico original).
+-   Tendencia : muestra una tendencia general descendente a lo largo del tiempo, con picos pronunciados en las décadas de 1980 y 1990, seguidos de una caída significativa en los años posteriores (algo que insinuaba el grafico original).
 
-- Estacionalidad : muestra oscilaciones estacionales regulares, con aumentos y disminuciones mensuales que parecen repetirse cada año. Esto indica que ciertos meses del año tienden a tener una inflación más alta o más baja de manera consistente.
+-   Estacionalidad : muestra oscilaciones estacionales regulares, con aumentos y disminuciones mensuales que parecen repetirse cada año. Esto indica que ciertos meses del año tienden a tener una inflación más alta o más baja de manera consistente.
 
-- Residuos : muestra las fluctuaciones aleatorias que no se explican por la tendencia o la estacionalidad. En este caso, los residuos parecen ser relativamente pequeños en comparación con la tendencia y la estacionalidad, lo que sugiere que el modelo de descomposición captura bien la estructura de la serie.
+-   Residuos : muestra las fluctuaciones aleatorias que no se explican por la tendencia o la estacionalidad. En este caso, los residuos parecen ser relativamente pequeños en comparación con la tendencia y la estacionalidad, lo que sugiere que el modelo de descomposición captura bien la estructura de la serie.
 
 ```{r}
 # Descomposicion STL de la serie
@@ -119,12 +120,12 @@ Inflacion |>
   components() |>
   autoplot()
 ```
+
 # Modelo de Regresion (TSLM)
 
 ## Ajuste del modelo
 
 Ahora realizamos un modelo de regresion para pronosticar la inflacion en los siguientes 12 meses. El modelo que utilizamos es el TSLM ( Time Series Linear Model ), que es una regresion lineal que incluye términos de tendencia y estacionalidad para capturar la estructura de la serie de tiempo.
-
 
 ```{r}
 # Ajustar el modelo usando TSLM (Time Series Linear Model - MCO para series de tiempo)
@@ -150,39 +151,41 @@ pronostico |>
        y = "Variación anual porcentual del IPC núcleo (15 grupos)") +
   theme_minimal()
 ```
+
 ## Reporte del modelo
 
 En este reporte podemos ver que el modelo intenta explicar la inflación usando dos cosas:
 
-- Tendencia en el tiempo ( trend() ), es decir, si la serie sube o baja con el paso de los meses.
-- Estacionalidad mensual ( season() ), o sea, si ciertos meses suelen comportarse distintos a otros.
+-   Tendencia en el tiempo ( trend() ), es decir, si la serie sube o baja con el paso de los meses.
+-   Estacionalidad mensual ( season() ), o sea, si ciertos meses suelen comportarse distintos a otros.
 
 Nos indica que :
 
-- La tendencia es negativa -4.3030 y el p-value es < 2e-16, lo que significa que es altamente significativa. Esto confirma que la inflación ha estado disminuyendo a lo largo del tiempo (aproximadamente 4.3 unidades por periodo).
+-   La tendencia es negativa -4.3030 y el p-value es \< 2e-16, lo que significa que es altamente significativa. Esto confirma que la inflación ha estado disminuyendo a lo largo del tiempo (aproximadamente 4.3 unidades por periodo).
 
-- La mayoría de los términos de estacionalidad ( season(Year2) a season(Year12) ) tienen p-values altos (>0.05), lo que sugiere que no hay estacionalidad significativa en la serie. Esto indica que los patrones mensuales no son estadísticamente relevantes para explicar la variación de la inflación.
+-   La mayoría de los términos de estacionalidad ( season(Year2) a season(Year12) ) tienen p-values altos (\>0.05), lo que sugiere que no hay estacionalidad significativa en la serie. Esto indica que los patrones mensuales no son estadísticamente relevantes para explicar la variación de la inflación.
 
-- Esto tiene mucho sentido teniendo en cuenta que la inflacion nucleo 15 elimina factores que pueden llegar a ser volatiles.
+-   Esto tiene mucho sentido teniendo en cuenta que la inflacion nucleo 15 elimina factores que pueden llegar a ser volatiles.
 
-- El R cuadrado multiple 0.5304 nos indica que el modelo explica aproximadamente el 53% de la variabilidad de la inflación, lo cual es un ajuste moderado.
+-   El R cuadrado multiple 0.5304 nos indica que el modelo explica aproximadamente el 53% de la variabilidad de la inflación, lo cual es un ajuste moderado.
 
-- El R cuadrado ajustado 0.5192 nos indica que, después de penalizar por la cantidad de predictores, el modelo sigue explicando alrededor del 52% de la variabilidad, lo que confirma que los términos incluidos son relevantes.
+-   El R cuadrado ajustado 0.5192 nos indica que, después de penalizar por la cantidad de predictores, el modelo sigue explicando alrededor del 52% de la variabilidad, lo que confirma que los términos incluidos son relevantes.
 
-- El valor de F estadistico 47.35 con un p-value < 2.22r-16 indica que el modelo en su conjunto es altamente significativo, es decir, al menos uno de los predictores (en este caso, la tendencia) contribuye significativamente a explicar la variación de la inflación.
+-   El valor de F estadistico 47.35 con un p-value \< 2.22r-16 indica que el modelo en su conjunto es altamente significativo, es decir, al menos uno de los predictores (en este caso, la tendencia) contribuye significativamente a explicar la variación de la inflación.
 
 ```{r}
 # 3. Reporte del modelo
 
 report(fit_mco)
 ```
+
 # Comparacion de modelos
 
 En este caso se utilizan 3 modelos para comparar el rendimiento de cada uno:
 
-- mco_stl : Modelo de regresion lineal con tendencia y estacionalidad ( TSLM con trend() + season() ).
-- mco_stl_covid : Modelo de regresion lineal con tendencia, estacionalidad y un indicador para el impacto del COVID-19 ( TSLM con trend() + season() + I(periodo == yearmonth("2020-04")) ).
-- mco_paro : Modelo de regresion lineal con tendencia, estacionalidad y un indicador para el impacto del paro nacional en Colombia ( TSLM con trend() + season()
+-   mco_stl : Modelo de regresion lineal con tendencia y estacionalidad ( TSLM con trend() + season() ).
+-   mco_stl_covid : Modelo de regresion lineal con tendencia, estacionalidad y un indicador para el impacto del COVID-19 ( TSLM con trend() + season() + I(periodo == yearmonth("2020-04")) ).
+-   mco_paro : Modelo de regresion lineal con tendencia, estacionalidad y un indicador para el impacto del paro nacional en Colombia ( TSLM con trend() + season()
 
 ```{r}
 fit_mco <- Inflacion |>
@@ -207,9 +210,9 @@ fit_mco <- Inflacion |>
 
 Teniendo en cuenta los resultados nos beneficiara escoger el modelo con los valores mas bajos teniendo en cuenta que:
 
-- AIC : mide qué tan bien ajusta el modelo, penalizando la complejidad. Más bajo es mejor .
-- BIC : similar al AIC, pero penaliza más la complejidad. Más bajo es mejor .
-- AICc : es una versión corregida del AIC, útil sobre todo en muestras
+-   AIC : mide qué tan bien ajusta el modelo, penalizando la complejidad. Más bajo es mejor .
+-   BIC : similar al AIC, pero penaliza más la complejidad. Más bajo es mejor .
+-   AICc : es una versión corregida del AIC, útil sobre todo en muestras
 
 Teniendo en cuenta los resultados el modelo mco_trend es el que tiene los valores mas bajos en AIC, BIC y AICc, lo que sugiere que es el modelo más preciso entre los comparados. Esto indica que la tendencia por sí sola explica gran parte de la variabilidad de la inflación núcleo 15%, y que agregar términos de estacionalidad o indicadores para eventos específicos (COVID-19, paro nacional) no mejora significativamente el ajuste del modelo.
 
@@ -219,6 +222,7 @@ glance(fit_mco) |>
   select(.model, AIC, BIC, AICc) |> 
   arrange(AIC)
 ```
+
 # Rendimiento del pronostico
 
 Por otro lado al analizar el rendimiento del pronostico nos beneficiara escoger el modelo con los valores mas bajos. En los analisis anteriores mco_trend tenia las mejores metricas de AIC, BIC y AICc, pero ahora al analizar las metricas de rendimiento del pronostico mco_paro es el que tiene los valores mas bajos en MAE, RMSE, MAPE y MASE, lo que sugiere que es el modelo con mejor capacidad de pronóstico entre los comparados. Esto indica que incluir tanto la tendencia como la estacionalidad y considerar los efectos del paro en el modelo mejora significativamente la precisión de las predicciones futuras de la inflación núcleo 15%, en comparación con otros modelos.
@@ -270,7 +274,7 @@ accuracy(predict_comp, Inflacion_test) |>
   arrange(RMSE)
 ```
 
-Posteriormente al separar la serie en un set de entrenamiento (80%) y un set de prueba (20%), entrenamos los mismos modelos en el set de entrenamiento y luego realizamos pronósticos para el horizonte del set de prueba. Al comparar las métricas de rendimiento (MAE, RMSE, MAPE, MASE) en el set de prueba, podemos identificar cuál modelo tiene la mejor capacidad predictiva. En este caso, el modelo mco_trend tiene valores menores en comparacion con los otros modelos. 
+Posteriormente al separar la serie en un set de entrenamiento (80%) y un set de prueba (20%), entrenamos los mismos modelos en el set de entrenamiento y luego realizamos pronósticos para el horizonte del set de prueba. Al comparar las métricas de rendimiento (MAE, RMSE, MAPE, MASE) en el set de prueba, podemos identificar cuál modelo tiene la mejor capacidad predictiva. En este caso, el modelo mco_trend tiene valores menores en comparacion con los otros modelos.
 
 Esto se explica porque separando los datos el modelo solo aprende del pasado y en muchas ocasiones no toma en cuenta eventos futuros que pueden llegar a afectar la serie, como el paro nacional en este caso.
 
@@ -278,7 +282,7 @@ Por lo que si los eventos dummy no son incluidos en el modelo, este no aprende d
 
 ## Grafico Pronostico train - test
 
-El grafico nos muestra que todos los modelos presentan diferencias significativas con respecto a los valores reales del set de prueba (línea negra), lo que indica que ninguno de los modelos logra capturar completamente la dinámica de la inflación núcleo 15% en el período de prueba. 
+El grafico nos muestra que todos los modelos presentan diferencias significativas con respecto a los valores reales del set de prueba (línea negra), lo que indica que ninguno de los modelos logra capturar completamente la dinámica de la inflación núcleo 15% en el período de prueba.
 
 ```{r}
 # Gráfico pronóstico train - test
@@ -306,5 +310,3 @@ for (modelo in c("mco_stl", "mco_stl_covid", "mco_paro", "mco_trend")) {
   print(p)
 }
 ```
-
-
